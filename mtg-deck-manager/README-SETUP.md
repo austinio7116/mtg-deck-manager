@@ -113,11 +113,22 @@ If you encounter a 422 Unprocessable Entity error when searching for cards, it m
 2. Adding logging to help diagnose any further issues
 3. Removing trailing slashes from API endpoint routes ("/search/" → "/search")
 4. Adding error handling and type conversion for the cmc parameter
+5. Reordering the route definitions to ensure specific routes come before parameterized routes
 
 The issues were:
 - The frontend was sending parameters as query parameters in the URL, but the backend was expecting them to be part of a Pydantic model
 - FastAPI's routing was having issues with the trailing slashes in the route definitions
 - The cmc parameter might be coming in as a string but the database expects an integer
+- The route order in FastAPI matters - the "/{card_id}" route was catching "/search" requests because it was defined first
+
+#### React Component Error in DeckBuilder
+
+If you encounter errors in the DeckBuilder component with "Uncaught ReferenceError: ArrowBack is not defined", it's due to an icon import issue. We've fixed this by:
+
+1. Ensuring the correct usage of imported icons in the DeckBuilder.js file
+2. Changing `<ArrowBack />` to `<BackIcon />` to match the import statement `import { ArrowBack as BackIcon } from '@mui/icons-material'`
+
+This ensures that the DeckBuilder component renders correctly and allows users to edit decks without errors.
 
 #### 400 Bad Request Error When Importing Decks
 

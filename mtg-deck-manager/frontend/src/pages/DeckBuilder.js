@@ -709,7 +709,7 @@ function DeckBuilder() {
                                           size="small"
                                           onClick={() => handleMoveCard(deckCard.index, false, true)}
                                         >
-                                          <ArrowBack fontSize="small" />
+                                          <BackIcon fontSize="small" />
                                         </IconButton>
                                       </Box>
                                     </Box>
@@ -800,7 +800,7 @@ function DeckBuilder() {
                                           size="small"
                                           onClick={() => handleMoveCard(deckCard.index, true, false)}
                                         >
-                                          <ArrowBack fontSize="small" sx={{ transform: 'rotate(180deg)' }} />
+                                          <BackIcon fontSize="small" sx={{ transform: 'rotate(180deg)' }} />
                                         </IconButton>
                                       </Box>
                                     </Box>
