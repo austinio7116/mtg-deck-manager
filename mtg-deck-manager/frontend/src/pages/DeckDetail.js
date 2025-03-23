@@ -61,6 +61,7 @@ function DeckDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
+  const [hoveredCard, setHoveredCard] = useState(null);
 
   useEffect(() => {
     const fetchDeckAndStats = async () => {
@@ -72,6 +73,12 @@ function DeckDetail() {
         ]);
         setDeck(deckData);
         setStats(statsData);
+        
+        // Set the first card as the hovered card initially
+        if (deckData.cards && deckData.cards.length > 0) {
+          setHoveredCard(deckData.cards[0].card);
+        }
+        
         setError(null);
       } catch (err) {
         console.error('Error fetching deck details:', err);
@@ -305,7 +312,11 @@ function DeckDetail() {
                         </TableHead>
                         <TableBody>
                           {cards.map((deckCard) => (
-                            <TableRow key={deckCard.id} hover>
+                            <TableRow
+                              key={deckCard.id}
+                              hover
+                              onMouseEnter={() => setHoveredCard(deckCard.card)}
+                            >
                               <TableCell>{deckCard.quantity}</TableCell>
                               <TableCell>
                                 <RouterLink
@@ -345,7 +356,11 @@ function DeckDetail() {
                       </TableHead>
                       <TableBody>
                         {sideboardCards.map((deckCard) => (
-                          <TableRow key={deckCard.id} hover>
+                          <TableRow
+                            key={deckCard.id}
+                            hover
+                            onMouseEnter={() => setHoveredCard(deckCard.card)}
+                          >
                             <TableCell>{deckCard.quantity}</TableCell>
                             <TableCell>
                               <RouterLink
@@ -365,21 +380,58 @@ function DeckDetail() {
               )}
 
               {/* Preview Card */}
-              {deck.cards.length > 0 && deck.cards[0].card.image_uri && (
-                <Box sx={{ mt: 4 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Card Preview
-                  </Typography>
-                  <Card sx={{ maxWidth: 300, mx: 'auto' }}>
+              <Box sx={{ mt: 4, position: 'sticky', top: 20 }}>
+                <Typography variant="h6" gutterBottom>
+                  Card Preview
+                </Typography>
+                <Card sx={{ maxWidth: 300, mx: 'auto' }}>
+                  {hoveredCard && hoveredCard.image_uri ? (
+                    <CardMedia
+                      component="img"
+                      image={hoveredCard.image_uri}
+                      alt={hoveredCard.name}
+                      sx={{
+                        borderRadius: 1,
+                        transition: 'all 0.3s ease-in-out'
+                      }}
+                    />
+                  ) : deck.cards.length > 0 && deck.cards[0].card.image_uri ? (
                     <CardMedia
                       component="img"
                       image={deck.cards[0].card.image_uri}
                       alt={deck.cards[0].card.name}
-                      sx={{ borderRadius: 1 }}
+                      sx={{
+                        borderRadius: 1,
+                        transition: 'all 0.3s ease-in-out'
+                      }}
                     />
-                  </Card>
-                </Box>
-              )}
+                  ) : (
+                    <Box
+                      sx={{
+                        height: 420,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: 'action.hover',
+                        borderRadius: 1
+                      }}
+                    >
+                      <Typography variant="body2" color="text.secondary" align="center">
+                        Hover over a card to see its image
+                      </Typography>
+                    </Box>
+                  )}
+                </Card>
+                {hoveredCard && (
+                  <Typography
+                    variant="subtitle1"
+                    align="center"
+                    sx={{ mt: 1 }}
+                  >
+                    {hoveredCard.name}
+                  </Typography>
+                )}
+              </Box>
             </Grid>
           </Grid>
         </TabPanel>
