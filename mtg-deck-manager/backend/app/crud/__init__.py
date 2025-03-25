@@ -6,6 +6,6 @@ from app.crud.deck import (
 
 from app.crud.card import (
     get_card, get_card_by_scryfall_id, get_card_by_name, get_cards,
-    search_cards, create_card, update_card, delete_card,
+    search_cards, search_cards_advanced, create_card, update_card, delete_card,
     get_or_create_card, autocomplete_card_names
 )
