@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
+import ManaSymbol from '../components/ManaSymbol';
 import {
   Box,
   Typography,
@@ -277,7 +278,7 @@ function CardDetail() {
 
             {card.mana_cost && (
               <Typography variant="body1" gutterBottom>
-                <strong>Mana Cost:</strong> {card.mana_cost}
+                <strong>Mana Cost:</strong> <ManaSymbol manaCost={card.mana_cost} size="medium" />
               </Typography>
             )}
 

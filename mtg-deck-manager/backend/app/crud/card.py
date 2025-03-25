@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any, Union, Tuple
 from app.models import Card
 from app.schemas import CardCreate
 import json
@@ -22,10 +22,10 @@ def get_cards(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Card).offset(skip).limit(limit).all()
 
 
-def search_cards(db: Session, name: Optional[str] = None, colors: Optional[str] = None, 
-                type_line: Optional[str] = None, cmc: Optional[int] = None, 
+def search_cards(db: Session, name: Optional[str] = None, colors: Optional[str] = None,
+                type_line: Optional[str] = None, cmc: Optional[int] = None,
                 rarity: Optional[str] = None, set_code: Optional[str] = None,
-                skip: int = 0, limit: int = 100):
+                skip: int = 0, limit: int = 100) -> Tuple[List[Card], int]:
     query = db.query(Card)
     
     if name:
@@ -48,7 +48,13 @@ def search_cards(db: Session, name: Optional[str] = None, colors: Optional[str] 
     if set_code:
         query = query.filter(Card.set_code == set_code)
     
-    return query.offset(skip).limit(limit).all()
+    # Get total count before applying pagination
+    total_count = query.count()
+    
+    # Apply pagination and return results
+    cards = query.offset(skip).limit(limit).all()
+    
+    return cards, total_count
 
 
 def create_card(db: Session, card: CardCreate):
@@ -202,7 +208,7 @@ def process_filter_group(group: Dict[str, Any]):
     return None
 
 
-def search_cards_advanced(db: Session, filter_data: Dict[str, Any], skip: int = 0, limit: int = 100):
+def search_cards_advanced(db: Session, filter_data: Dict[str, Any], skip: int = 0, limit: int = 100) -> Tuple[List[Card], int]:
     """
     Search for cards with complex filter conditions
     
@@ -236,8 +242,13 @@ def search_cards_advanced(db: Session, filter_data: Dict[str, Any], skip: int = 
     if filter_clause is not None:
         query = query.filter(filter_clause)
     
-    # Apply pagination
-    return query.offset(skip).limit(limit).all()
+    # Get total count before applying pagination
+    total_count = query.count()
+    
+    # Apply pagination and return results
+    cards = query.offset(skip).limit(limit).all()
+    
+    return cards, total_count
 
 
 # Duplicate function removed

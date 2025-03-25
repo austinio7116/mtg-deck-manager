@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Tuple
+from sqlalchemy import func
 
 from app.database import get_db
 from app.schemas import Card, CardCreate, CardSearch
@@ -36,6 +37,7 @@ def create_new_card(card: CardCreate, db: Session = Depends(get_db)):
 
 @router.get("/search", response_model=List[Card])
 def search_cards_endpoint(
+    response: Response,
     skip: int = 0,
     limit: int = 100,
     name: Optional[str] = None,
@@ -77,7 +79,7 @@ def search_cards_endpoint(
                 print(f"Parsed filter JSON: {filter_data}")
                 
                 # Use the advanced search function
-                cards = search_cards_advanced(
+                cards, total_count = search_cards_advanced(
                     db,
                     filter_data=filter_data,
                     skip=skip,
@@ -86,7 +88,7 @@ def search_cards_endpoint(
             except json.JSONDecodeError as e:
                 print(f"Error decoding filter JSON: {e}")
                 # Fall back to simple search if JSON parsing fails
-                cards = search_cards(
+                cards, total_count = search_cards(
                     db,
                     name=name,
                     colors=colors,
@@ -99,7 +101,7 @@ def search_cards_endpoint(
                 )
         else:
             # Use the simple search function
-            cards = search_cards(
+            cards, total_count = search_cards(
                 db,
                 name=name,
                 colors=colors,
@@ -111,7 +113,12 @@ def search_cards_endpoint(
                 limit=limit
             )
         
-        print(f"Found {len(cards)} cards matching the search criteria")
+        print(f"Found {len(cards)} cards out of {total_count} total matching the search criteria")
+        
+        # Set the total count in the response header
+        response.headers["X-Total-Count"] = str(total_count)
+        print(f"Setting X-Total-Count header to: {total_count}")
+        
         return cards
     except Exception as e:
         print(f"Error in search_cards_endpoint: {str(e)}")

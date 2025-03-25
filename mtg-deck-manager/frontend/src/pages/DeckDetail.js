@@ -21,14 +21,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Stack,
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   BarChart as StatsIcon,
+  GridView as GridViewIcon,
 } from '@mui/icons-material';
 import { deckApi } from '../api/api';
 import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import ManaSymbol from '../components/ManaSymbol';
 
 // Card type categories for grouping
 const CARD_TYPES = [
@@ -277,6 +280,7 @@ function DeckDetail() {
             aria-label="deck tabs"
           >
             <Tab label="Deck List" />
+            <Tab label="Card Grid" icon={<GridViewIcon />} iconPosition="start" />
             <Tab label="Statistics" icon={<StatsIcon />} iconPosition="start" />
           </Tabs>
         </Box>
@@ -326,7 +330,12 @@ function DeckDetail() {
                                   {deckCard.card.name}
                                 </RouterLink>
                               </TableCell>
-                              <TableCell>{deckCard.card.mana_cost || '-'}</TableCell>
+                              <TableCell>
+                                {deckCard.card.mana_cost ?
+                                  <ManaSymbol manaCost={deckCard.card.mana_cost} size="small" /> :
+                                  '-'
+                                }
+                              </TableCell>
                               <TableCell>{deckCard.card.type_line}</TableCell>
                             </TableRow>
                           ))}
@@ -436,8 +445,379 @@ function DeckDetail() {
           </Grid>
         </TabPanel>
 
-        {/* Statistics Tab */}
+        {/* Card Grid Tab */}
         <TabPanel value={tabValue} index={1}>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h5" gutterBottom>
+              Card Grid View
+            </Typography>
+            
+            {/* Deck Board */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 4,
+                bgcolor: 'background.default',
+                borderRadius: 2,
+                p: 4
+              }}
+            >
+              {/* Creatures Section */}
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Creatures ({groupedMainDeck['Creature'].reduce((sum, card) => sum + card.quantity, 0)})
+                </Typography>
+                
+                <Box sx={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', pb: 1 }}>
+                  {/* Fixed 8 columns for CMC */}
+                  {[0, 1, 2, 3, 4, 5, 6, '7+'].map((cmc) => {
+                    // Filter creatures by CMC
+                    const cmcCards = groupedMainDeck['Creature'].filter(deckCard => {
+                      if (cmc === '7+') return deckCard.card.cmc >= 7;
+                      return deckCard.card.cmc === cmc;
+                    });
+                    
+                    return (
+                      <Box
+                        key={`creature-${cmc}`}
+                        sx={{
+                          minWidth: 120,
+                          width: '12.5%',
+                          px: 0.5,
+                          position: 'relative',
+                          overflow: 'visible'
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            position: 'absolute',
+                            top: -20,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            color: 'text.secondary'
+                          }}
+                        >
+                          {cmc === '7+' ? '7+ CMC' : `${cmc} CMC`}
+                        </Typography>
+                        
+                        <Box sx={{ position: 'relative', minHeight: 50, overflow: 'visible' }}>
+                          {cmcCards.map((deckCard, index) => (
+                            <Box
+                              key={deckCard.id}
+                              sx={{
+                                position: 'relative',
+                                marginTop: index > 0 ? `-85%` : 0,
+                                zIndex: index,
+                                overflow: 'visible',
+                                '&:hover': {
+                                  transform: 'scale(1.2)',
+                                  zIndex: 100,
+                                  transition: 'transform 0.2s'
+                                }
+                              }}
+                              onMouseEnter={() => setHoveredCard(deckCard.card)}
+                            >
+                              {deckCard.card.image_uri ? (
+                                <Box
+                                  sx={{ position: 'relative', overflow: 'visible' }}
+                                  component={RouterLink}
+                                  to={`/cards/${deckCard.card.id}`}
+                                >
+                                  <CardMedia
+                                    component="img"
+                                    image={deckCard.card.image_uri}
+                                    alt={deckCard.card.name}
+                                    sx={{
+                                      borderRadius: 1,
+                                      boxShadow: 2,
+                                      width: '100%'
+                                    }}
+                                  />
+                                  {deckCard.quantity > 1 && (
+                                    <Chip
+                                      label={`x${deckCard.quantity}`}
+                                      size="small"
+                                      sx={{
+                                        position: 'absolute',
+                                        bottom: 5,
+                                        right: 5,
+                                        bgcolor: 'rgba(0, 0, 0, 0.7)',
+                                        color: 'white',
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        '& .MuiChip-label': {
+                                          px: 1
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </Box>
+                              ) : (
+                                <Paper
+                                  sx={{
+                                    p: 1,
+                                    textAlign: 'center',
+                                    height: 40,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: 2
+                                  }}
+                                >
+                                  <Typography variant="body2">
+                                    {deckCard.quantity}x {deckCard.card.name}
+                                  </Typography>
+                                </Paper>
+                              )}
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
+              
+              {/* Non-Creature Spells Section */}
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Non-Creature Spells ({
+                    ['Instant', 'Sorcery', 'Artifact', 'Enchantment', 'Planeswalker'].reduce((sum, type) =>
+                      sum + groupedMainDeck[type].reduce((s, card) => s + card.quantity, 0), 0)
+                  })
+                </Typography>
+                
+                <Box sx={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', pb: 1 }}>
+                  {/* Fixed 8 columns for CMC */}
+                  {[0, 1, 2, 3, 4, 5, 6, '7+'].map((cmc) => {
+                    // Filter non-creature spells by CMC
+                    const cmcCards = [
+                      ...groupedMainDeck['Instant'],
+                      ...groupedMainDeck['Sorcery'],
+                      ...groupedMainDeck['Artifact'].filter(c => !c.card.type_line.includes('Creature')),
+                      ...groupedMainDeck['Enchantment'].filter(c => !c.card.type_line.includes('Creature')),
+                      ...groupedMainDeck['Planeswalker']
+                    ].filter(deckCard => {
+                      if (cmc === '7+') return deckCard.card.cmc >= 7;
+                      return deckCard.card.cmc === cmc;
+                    });
+                    
+                    return (
+                      <Box
+                        key={`noncreature-${cmc}`}
+                        sx={{
+                          minWidth: 120,
+                          width: '12.5%',
+                          px: 0.5,
+                          position: 'relative',
+                          overflow: 'visible'
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            position: 'absolute',
+                            top: -20,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            color: 'text.secondary'
+                          }}
+                        >
+                          {cmc === '7+' ? '7+ CMC' : `${cmc} CMC`}
+                        </Typography>
+                        
+                        <Box sx={{ position: 'relative', minHeight: 50, overflow: 'visible' }}>
+                          {cmcCards.map((deckCard, index) => (
+                            <Box
+                              key={deckCard.id}
+                              sx={{
+                                position: 'relative',
+                                marginTop: index > 0 ? `-85%` : 0,
+                                zIndex: index,
+                                overflow: 'visible',
+                                '&:hover': {
+                                  transform: 'scale(1.2)',
+                                  zIndex: 100,
+                                  transition: 'transform 0.2s'
+                                }
+                              }}
+                              onMouseEnter={() => setHoveredCard(deckCard.card)}
+                            >
+                              {deckCard.card.image_uri ? (
+                                <Box
+                                  sx={{ position: 'relative', overflow: 'visible' }}
+                                  component={RouterLink}
+                                  to={`/cards/${deckCard.card.id}`}
+                                >
+                                  <CardMedia
+                                    component="img"
+                                    image={deckCard.card.image_uri}
+                                    alt={deckCard.card.name}
+                                    sx={{
+                                      borderRadius: 1,
+                                      boxShadow: 2,
+                                      width: '100%'
+                                    }}
+                                  />
+                                  {deckCard.quantity > 1 && (
+                                    <Chip
+                                      label={`x${deckCard.quantity}`}
+                                      size="small"
+                                      sx={{
+                                        position: 'absolute',
+                                        bottom: 5,
+                                        right: 5,
+                                        bgcolor: 'rgba(0, 0, 0, 0.7)',
+                                        color: 'white',
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        '& .MuiChip-label': {
+                                          px: 1
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </Box>
+                              ) : (
+                                <Paper
+                                  sx={{
+                                    p: 1,
+                                    textAlign: 'center',
+                                    height: 40,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: 2
+                                  }}
+                                >
+                                  <Typography variant="body2">
+                                    {deckCard.quantity}x {deckCard.card.name}
+                                  </Typography>
+                                </Paper>
+                              )}
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
+              
+              {/* Lands Section */}
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Lands ({groupedMainDeck['Land'].reduce((sum, card) => sum + card.quantity, 0)})
+                </Typography>
+                
+                <Box sx={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', pb: 1 }}>
+                  {/* Fixed 8 columns for lands, grouped by basic/nonbasic */}
+                  {[0, 1, 2, 3, 4, 5, 6, 7].map((columnIndex) => {
+                    // Distribute lands evenly across 8 columns
+                    const totalLands = groupedMainDeck['Land'].length;
+                    const landsPerColumn = Math.ceil(totalLands / 8);
+                    const startIndex = columnIndex * landsPerColumn;
+                    const endIndex = Math.min(startIndex + landsPerColumn, totalLands);
+                    const columnLands = groupedMainDeck['Land'].slice(startIndex, endIndex);
+                    
+                    if (columnLands.length === 0) return null;
+                    
+                    return (
+                      <Box
+                        key={`land-${columnIndex}`}
+                        sx={{
+                          minWidth: 120,
+                          width: '12.5%',
+                          px: 0.5,
+                          position: 'relative',
+                          overflow: 'visible' // Allow content to overflow for hover effect
+                        }}
+                      >
+                        <Box sx={{ position: 'relative', minHeight: 50, overflow: 'visible' }}>
+                          {columnLands.map((deckCard, index) => (
+                            <Box
+                              key={deckCard.id}
+                              sx={{
+                                position: 'relative',
+                                marginTop: index > 0 ? `-85%` : 0,
+                                zIndex: index,
+                                overflow: 'visible',
+                                '&:hover': {
+                                  transform: 'scale(1.2)',
+                                  zIndex: 100,
+                                  transition: 'transform 0.2s'
+                                }
+                              }}
+                              onMouseEnter={() => setHoveredCard(deckCard.card)}
+                            >
+                              {deckCard.card.image_uri ? (
+                                <Box
+                                  sx={{ position: 'relative', overflow: 'visible' }}
+                                  component={RouterLink}
+                                  to={`/cards/${deckCard.card.id}`}
+                                >
+                                  <CardMedia
+                                    component="img"
+                                    image={deckCard.card.image_uri}
+                                    alt={deckCard.card.name}
+                                    sx={{
+                                      borderRadius: 1,
+                                      boxShadow: 2,
+                                      width: '100%'
+                                    }}
+                                  />
+                                  {deckCard.quantity > 1 && (
+                                    <Chip
+                                      label={`x${deckCard.quantity}`}
+                                      size="small"
+                                      sx={{
+                                        position: 'absolute',
+                                        bottom: 5,
+                                        right: 5,
+                                        bgcolor: 'rgba(0, 0, 0, 0.7)',
+                                        color: 'white',
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        '& .MuiChip-label': {
+                                          px: 1
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </Box>
+                              ) : (
+                                <Paper
+                                  sx={{
+                                    p: 1,
+                                    textAlign: 'center',
+                                    height: 40,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: 2
+                                  }}
+                                >
+                                  <Typography variant="body2">
+                                    {deckCard.quantity}x {deckCard.card.name}
+                                  </Typography>
+                                </Paper>
+                              )}
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        </TabPanel>
+        
+        {/* Statistics Tab */}
+        <TabPanel value={tabValue} index={2}>
           {stats ? (
             <Grid container spacing={4}>
               {/* Mana Curve */}

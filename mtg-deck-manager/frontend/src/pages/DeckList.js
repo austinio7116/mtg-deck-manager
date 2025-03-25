@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
@@ -22,6 +22,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  CardMedia,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -45,6 +46,7 @@ function DeckList() {
   const [deckToDelete, setDeckToDelete] = useState(null);
   const [sortOption, setSortOption] = useState('updated');
   const [filterFormat, setFilterFormat] = useState('');
+  const [deckCards, setDeckCards] = useState({});
 
   const sortOptions = [
     { value: 'updated', label: 'Last Updated' },
@@ -67,12 +69,51 @@ function DeckList() {
       setDecks(data);
       setFilteredDecks(data);
       setError(null);
+      
+      // Fetch cards for each deck
+      const deckCardsData = {};
+      for (const deck of data) {
+        try {
+          const deckDetail = await deckApi.getDeck(deck.id);
+          deckCardsData[deck.id] = deckDetail.cards;
+        } catch (err) {
+          console.error(`Error fetching cards for deck ${deck.id}:`, err);
+        }
+      }
+      setDeckCards(deckCardsData);
     } catch (err) {
       console.error('Error fetching decks:', err);
       setError('Failed to load decks. Please try again later.');
     } finally {
       setLoading(false);
     }
+  };
+  
+  // Function to get featured cards for a deck
+  const getFeaturedCards = (deckId) => {
+    if (!deckCards[deckId]) return [];
+    
+    // First try to get nonland cards with quantity >= 4
+    let eligibleCards = deckCards[deckId].filter(card =>
+      !card.card.type_line.includes('Land') &&
+      card.quantity >= 4 &&
+      card.card.image_uri // Make sure it has an image
+    );
+    
+    // If we don't have enough eligible cards, get any nonland cards
+    if (eligibleCards.length < 3) {
+      eligibleCards = deckCards[deckId].filter(card =>
+        !card.card.type_line.includes('Land') &&
+        card.card.image_uri // Make sure it has an image
+      );
+    }
+    
+    // If we still don't have enough cards, return what we have
+    if (eligibleCards.length === 0) return [];
+    
+    // Randomly select up to 3 cards
+    const shuffled = [...eligibleCards].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, Math.min(3, shuffled.length));
   };
 
   useEffect(() => {
@@ -302,6 +343,67 @@ function DeckList() {
                       sx={{ mb: 1 }}
                     />
                   )}
+                  
+                  {/* Featured Cards */}
+                  {deckCards[deck.id] && (
+                    <Box sx={{
+                      height: 120,
+                      position: 'relative',
+                      my: 2,
+                      display: 'flex',
+                      justifyContent: 'center'
+                    }}>
+                      {getFeaturedCards(deck.id).map((card, index) => (
+                        <Box
+                          key={card.id}
+                          sx={{
+                            position: 'absolute',
+                            left: `calc(50% - 40px + ${index * 30}px)`,
+                            top: 0,
+                            width: 80,
+                            height: 112,
+                            transform: `rotate(${(index - 1) * 5}deg)`,
+                            transformOrigin: 'bottom center',
+                            transition: 'transform 0.2s',
+                            zIndex: index,
+                            '&:hover': {
+                              transform: `rotate(${(index - 1) * 5}deg) translateY(-10px)`,
+                              zIndex: 10
+                            }
+                          }}
+                        >
+                          <CardMedia
+                            component="img"
+                            image={card.card.image_uri}
+                            alt={card.card.name}
+                            sx={{
+                              height: '100%',
+                              width: '100%',
+                              objectFit: 'cover',
+                              borderRadius: 1,
+                              boxShadow: 2
+                            }}
+                          />
+                        </Box>
+                      ))}
+                      {getFeaturedCards(deck.id).length === 0 && (
+                        <Box sx={{
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: 'action.hover',
+                          borderRadius: 1,
+                          width: '100%'
+                        }}>
+                          <Typography variant="caption" color="text.secondary">
+                            No preview available
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  )}
+                  
                   {deck.tags && (
                     <Box sx={{ mt: 1, mb: 1 }}>
                       {deck.tags.split(',').map((tag) => (

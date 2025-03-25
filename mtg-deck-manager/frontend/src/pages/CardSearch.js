@@ -406,8 +406,9 @@ function CardSearch() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCards, setTotalCards] = useState(0);
   
-  const cardsPerPage = 20;
+  const cardsPerPage = 60; // Increased from 20 to 60
 
   // Effect to search cards when parameters change
   useEffect(() => {
@@ -461,12 +462,14 @@ function CardSearch() {
       
       // Build search parameters
       const params = buildQueryParams();
-      
-      const results = await cardApi.searchCards(params);
+      const { cards: results, totalCount } = await cardApi.searchCards(params);
       setCards(results);
+      setTotalCards(totalCount);
       
-      // Calculate total pages (this is a simplification - in a real app, the API would return total count)
-      setTotalPages(Math.ceil(results.length / cardsPerPage) || 1);
+      // Calculate total pages based on the total count from the API
+      const calculatedPages = Math.ceil(totalCount / cardsPerPage) || 1;
+      console.log(`Total cards: ${totalCount}, Cards per page: ${cardsPerPage}, Total pages: ${calculatedPages}, Current page: ${page}`);
+      setTotalPages(calculatedPages);
       
     } catch (err) {
       console.error('Error searching cards:', err);
@@ -801,7 +804,7 @@ function CardSearch() {
       ) : cards.length > 0 ? (
         <>
           <Typography variant="subtitle1" gutterBottom>
-            Showing {cards.length} results
+            Showing {cards.length} of {totalCards} results
           </Typography>
           <Grid container spacing={2}>
             {cards.map((card) => (
@@ -872,16 +875,16 @@ function CardSearch() {
           </Grid>
           
           {/* Pagination */}
-          {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
-              />
-            </Box>
-          )}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              siblingCount={1}
+              boundaryCount={1}
+            />
+          </Box>
         </>
       ) : (
         <Alert severity="info">

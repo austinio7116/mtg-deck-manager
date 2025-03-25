@@ -2,10 +2,18 @@ import axios from 'axios';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: 'http://192.168.1.86:8000/api',
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+// Add response interceptor to log headers
+api.interceptors.response.use(response => {
+  console.log('Response headers:', response.headers);
+  return response;
+}, error => {
+  return Promise.reject(error);
 });
 
 // Deck API
@@ -92,7 +100,21 @@ export const cardApi = {
   // Search cards
   searchCards: async (searchParams) => {
     const response = await api.get('/cards/search', { params: searchParams });
-    return response.data;
+    
+    // Check if the response includes a count header
+    const totalCount = response.headers['x-total-count'];
+    console.log('API Response Headers:', response.headers);
+    console.log('X-Total-Count header:', totalCount);
+    
+    // Parse the total count, defaulting to the length of the results if header is missing
+    const parsedCount = totalCount ? parseInt(totalCount) : response.data.length;
+    console.log('Parsed total count:', parsedCount);
+    
+    // Return both the data and the total count
+    return {
+      cards: response.data,
+      totalCount: parsedCount
+    };
   },
 
   // Autocomplete card names
