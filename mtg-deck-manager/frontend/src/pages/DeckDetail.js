@@ -469,7 +469,7 @@ function DeckDetail() {
                   Creatures ({groupedMainDeck['Creature'].reduce((sum, card) => sum + card.quantity, 0)})
                 </Typography>
                 
-                <Box sx={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', pb: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'nowrap', pb: 1 }}>
                   {/* Fixed 8 columns for CMC */}
                   {[0, 1, 2, 3, 4, 5, 6, '7+'].map((cmc) => {
                     // Filter creatures by CMC
@@ -485,24 +485,11 @@ function DeckDetail() {
                           minWidth: 120,
                           width: '12.5%',
                           px: 0.5,
-                          position: 'relative',
-                          overflow: 'visible'
+                          position: 'relative'
                         }}
                       >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            position: 'absolute',
-                            top: -20,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            color: 'text.secondary'
-                          }}
-                        >
-                          {cmc === '7+' ? '7+ CMC' : `${cmc} CMC`}
-                        </Typography>
-                        
-                        <Box sx={{ position: 'relative', minHeight: 50, overflow: 'visible' }}>
+
+                        <Box sx={{ position: 'relative', minHeight: 50}}>
                           {cmcCards.map((deckCard, index) => (
                             <Box
                               key={deckCard.id}
@@ -510,7 +497,6 @@ function DeckDetail() {
                                 position: 'relative',
                                 marginTop: index > 0 ? `-85%` : 0,
                                 zIndex: index,
-                                overflow: 'visible',
                                 '&:hover': {
                                   transform: 'scale(1.2)',
                                   zIndex: 100,
@@ -521,7 +507,7 @@ function DeckDetail() {
                             >
                               {deckCard.card.image_uri ? (
                                 <Box
-                                  sx={{ position: 'relative', overflow: 'visible' }}
+                                  sx={{ position: 'relative'}}
                                   component={RouterLink}
                                   to={`/cards/${deckCard.card.id}`}
                                 >
@@ -541,7 +527,7 @@ function DeckDetail() {
                                       size="small"
                                       sx={{
                                         position: 'absolute',
-                                        bottom: 5,
+                                        top: 25,
                                         right: 5,
                                         bgcolor: 'rgba(0, 0, 0, 0.7)',
                                         color: 'white',
@@ -589,7 +575,7 @@ function DeckDetail() {
                   })
                 </Typography>
                 
-                <Box sx={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', pb: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'nowrap', pb: 1 }}>
                   {/* Fixed 8 columns for CMC */}
                   {[0, 1, 2, 3, 4, 5, 6, '7+'].map((cmc) => {
                     // Filter non-creature spells by CMC
@@ -611,24 +597,11 @@ function DeckDetail() {
                           minWidth: 120,
                           width: '12.5%',
                           px: 0.5,
-                          position: 'relative',
-                          overflow: 'visible'
+                          position: 'relative'
                         }}
                       >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            position: 'absolute',
-                            top: -20,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            color: 'text.secondary'
-                          }}
-                        >
-                          {cmc === '7+' ? '7+ CMC' : `${cmc} CMC`}
-                        </Typography>
                         
-                        <Box sx={{ position: 'relative', minHeight: 50, overflow: 'visible' }}>
+                        <Box sx={{ position: 'relative', minHeight: 50}}>
                           {cmcCards.map((deckCard, index) => (
                             <Box
                               key={deckCard.id}
@@ -636,7 +609,6 @@ function DeckDetail() {
                                 position: 'relative',
                                 marginTop: index > 0 ? `-85%` : 0,
                                 zIndex: index,
-                                overflow: 'visible',
                                 '&:hover': {
                                   transform: 'scale(1.2)',
                                   zIndex: 100,
@@ -647,7 +619,7 @@ function DeckDetail() {
                             >
                               {deckCard.card.image_uri ? (
                                 <Box
-                                  sx={{ position: 'relative', overflow: 'visible' }}
+                                  sx={{ position: 'relative'}}
                                   component={RouterLink}
                                   to={`/cards/${deckCard.card.id}`}
                                 >
@@ -667,7 +639,7 @@ function DeckDetail() {
                                       size="small"
                                       sx={{
                                         position: 'absolute',
-                                        bottom: 5,
+                                        top: 25,
                                         right: 5,
                                         bgcolor: 'rgba(0, 0, 0, 0.7)',
                                         color: 'white',
@@ -712,7 +684,7 @@ function DeckDetail() {
                   Lands ({groupedMainDeck['Land'].reduce((sum, card) => sum + card.quantity, 0)})
                 </Typography>
                 
-                <Box sx={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', pb: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'nowrap', pb: 1 }}>
                   {/* Fixed 8 columns for lands, grouped by basic/nonbasic */}
                   {[0, 1, 2, 3, 4, 5, 6, 7].map((columnIndex) => {
                     // Distribute lands evenly across 8 columns
@@ -731,11 +703,10 @@ function DeckDetail() {
                           minWidth: 120,
                           width: '12.5%',
                           px: 0.5,
-                          position: 'relative',
-                          overflow: 'visible' // Allow content to overflow for hover effect
+                          position: 'relative'
                         }}
                       >
-                        <Box sx={{ position: 'relative', minHeight: 50, overflow: 'visible' }}>
+                        <Box sx={{ position: 'relative', minHeight: 50}}>
                           {columnLands.map((deckCard, index) => (
                             <Box
                               key={deckCard.id}
@@ -743,7 +714,6 @@ function DeckDetail() {
                                 position: 'relative',
                                 marginTop: index > 0 ? `-85%` : 0,
                                 zIndex: index,
-                                overflow: 'visible',
                                 '&:hover': {
                                   transform: 'scale(1.2)',
                                   zIndex: 100,
@@ -754,7 +724,7 @@ function DeckDetail() {
                             >
                               {deckCard.card.image_uri ? (
                                 <Box
-                                  sx={{ position: 'relative', overflow: 'visible' }}
+                                  sx={{ position: 'relative'}}
                                   component={RouterLink}
                                   to={`/cards/${deckCard.card.id}`}
                                 >
@@ -774,7 +744,7 @@ function DeckDetail() {
                                       size="small"
                                       sx={{
                                         position: 'absolute',
-                                        bottom: 5,
+                                        top: 25,
                                         right: 5,
                                         bgcolor: 'rgba(0, 0, 0, 0.7)',
                                         color: 'white',

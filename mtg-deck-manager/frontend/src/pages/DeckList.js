@@ -101,7 +101,7 @@ function DeckList() {
     );
     
     // If we don't have enough eligible cards, get any nonland cards
-    if (eligibleCards.length < 3) {
+    if (eligibleCards.length < 5) {
       eligibleCards = deckCards[deckId].filter(card =>
         !card.card.type_line.includes('Land') &&
         card.card.image_uri // Make sure it has an image
@@ -111,9 +111,8 @@ function DeckList() {
     // If we still don't have enough cards, return what we have
     if (eligibleCards.length === 0) return [];
     
-    // Randomly select up to 3 cards
-    const shuffled = [...eligibleCards].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, Math.min(3, shuffled.length));
+    // Select up to 5 cards
+    return eligibleCards.slice(0, Math.min(5, eligibleCards.length));
   };
 
   useEffect(() => {
@@ -358,16 +357,16 @@ function DeckList() {
                           key={card.id}
                           sx={{
                             position: 'absolute',
-                            left: `calc(50% - 40px + ${index * 30}px)`,
+                            left: `calc(50% - 40px + ${(index - 2) * 30}px)`,
                             top: 0,
                             width: 80,
                             height: 112,
-                            transform: `rotate(${(index - 1) * 5}deg)`,
+                            transform: `rotate(${(index - 2) * 5}deg)`,
                             transformOrigin: 'bottom center',
                             transition: 'transform 0.2s',
                             zIndex: index,
                             '&:hover': {
-                              transform: `rotate(${(index - 1) * 5}deg) translateY(-10px)`,
+                              transform: `rotate(${(index - 2) * 5}deg) translateY(-10px)`,
                               zIndex: 10
                             }
                           }}

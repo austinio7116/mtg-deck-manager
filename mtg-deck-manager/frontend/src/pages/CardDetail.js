@@ -155,13 +155,6 @@ function CardDetail() {
         >
           Back
         </Button>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAddToDeck}
-        >
-          Add to Deck
-        </Button>
       </Box>
 
       <Grid container spacing={4}>
