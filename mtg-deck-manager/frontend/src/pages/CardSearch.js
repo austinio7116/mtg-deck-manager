@@ -408,7 +408,7 @@ function CardSearch() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCards, setTotalCards] = useState(0);
   
-  const cardsPerPage = 60; // Increased from 20 to 60
+  const cardsPerPage = 12;
 
   // Effect to search cards when parameters change
   useEffect(() => {
@@ -427,6 +427,19 @@ function CardSearch() {
       if (searchTerm) {
         params.name = searchTerm;
       }
+      
+      if (filtersVisible) {
+        filterGroup.conditions.forEach(condition => {
+          if (condition.value) {
+            if (condition.field === 'cmc' && !isNaN(parseInt(condition.value))) {
+              params[condition.field] = parseInt(condition.value);
+            } else {
+              params[condition.field] = condition.value;
+            }
+          }
+        });
+      }
+      
       return params;
     }
     
