@@ -495,7 +495,7 @@ function DeckDetail() {
                               key={deckCard.id}
                               sx={{
                                 position: 'relative',
-                                marginTop: index > 0 ? `-85%` : 0,
+                                marginTop: index > 0 ? `-115%` : 0,
                                 zIndex: index,
                                 '&:hover': {
                                   transform: 'scale(1.2)',
@@ -527,8 +527,8 @@ function DeckDetail() {
                                       size="small"
                                       sx={{
                                         position: 'absolute',
-                                        top: 25,
-                                        right: 5,
+                                        top: 5,
+                                        right: 25,
                                         bgcolor: 'rgba(0, 0, 0, 0.7)',
                                         color: 'white',
                                         fontSize: '0.7rem',
@@ -607,7 +607,7 @@ function DeckDetail() {
                               key={deckCard.id}
                               sx={{
                                 position: 'relative',
-                                marginTop: index > 0 ? `-85%` : 0,
+                                marginTop: index > 0 ? `-115%` : 0,
                                 zIndex: index,
                                 '&:hover': {
                                   transform: 'scale(1.2)',
@@ -639,8 +639,8 @@ function DeckDetail() {
                                       size="small"
                                       sx={{
                                         position: 'absolute',
-                                        top: 25,
-                                        right: 5,
+                                        top: 5,
+                                        right: 25,
                                         bgcolor: 'rgba(0, 0, 0, 0.7)',
                                         color: 'white',
                                         fontSize: '0.7rem',
@@ -712,7 +712,7 @@ function DeckDetail() {
                               key={deckCard.id}
                               sx={{
                                 position: 'relative',
-                                marginTop: index > 0 ? `-85%` : 0,
+                                marginTop: index > 0 ? `-115%` : 0,
                                 zIndex: index,
                                 '&:hover': {
                                   transform: 'scale(1.2)',
@@ -744,8 +744,8 @@ function DeckDetail() {
                                       size="small"
                                       sx={{
                                         position: 'absolute',
-                                        top: 25,
-                                        right: 5,
+                                        top: 5,
+                                        right: 25,
                                         bgcolor: 'rgba(0, 0, 0, 0.7)',
                                         color: 'white',
                                         fontSize: '0.7rem',
